@@ -10,6 +10,50 @@ local update_path = function(path)
   vim.fn.setenv('PATH', path .. '/bin' .. ':' .. ORIGINAL_PATH)
 end
 
+local get_root = function()
+	local Path = require('plenary.path')
+	local scandir = require'plenary.scandir'.scan_dir
+
+	local scan = scandir('.', { add_dirs = true, hidden = true, depth = 2 })
+	local root_file = nil
+	local root_dir = nil
+	local root_markers = {".git", ".venv", "venv", "pyrightconfig.json"}
+	for _, f in ipairs(scan) do
+		local path = vim.split(f, '/')
+		local i = table.getn(path)
+		local file_name = path[i]
+		for _, marker in ipairs(root_markers) do
+			if file_name == marker then
+				root_file = f
+			end
+		end
+	end
+	if root_file ~= nil then
+		root_dir = Path:new(root_file):parent()
+	end
+	return root_dir
+end
+
+local find_cache = function(dir)
+	local Path = require('plenary.path')
+	local cache = Path:new(dir.filename .. '/.cachedVenv')
+	if cache:is_file() then
+		return cache
+	else
+		return nil
+	end
+end
+
+local write_cache = function(env_path)
+	local root = get_root()
+	local Path = require('plenary.path')
+	local cache = Path:new(root.filename .. '/.cachedVenv')
+	if not cache:is_file() then
+		cache:touch()
+	end
+	cache:write(env_path, 'w', 438)
+end
+
 local set_venv = function(venv)
   if venv.source == 'conda' then
     vim.fn.setenv('CONDA_PREFIX', venv.path)
@@ -20,12 +64,44 @@ local set_venv = function(venv)
   end
 
   current_venv = venv
+
   -- TODO: remove old path
   update_path(venv.path)
 
   if settings.post_set_venv then
     settings.post_set_venv(venv)
   end
+  write_cache(venv.path)
+end
+
+M.select_cached = function()
+	local Path = require('plenary.path')
+	local root_dir  = get_root()
+	if root_dir then
+		print('Project root directory found: ' .. root_dir.filename)
+		local cache = find_cache(root_dir)
+		if cache then
+			local env = cache:readlines()[1]
+			if env then
+				local env_path = Path:new(env)
+				local env_root = env_path:parent()
+				local env_name = env_path:make_relative(env_path:parent().filename)
+				local env_objs = M.get_venvs(env_root.filename)
+				for _, e in ipairs(env_objs) do
+					if e.name == env_name then
+						print('Automatically sourcing '..env..' from venv cache')
+						set_venv(e)
+						return
+					end
+				end
+				print('Could not find valid venv in cache')
+			end
+		end
+	else
+		print('Project root could not be found')
+	end
+	M.pick_venv()
+	return
 end
 
 ---
@@ -107,7 +183,7 @@ M.get_venvs = function(venvs_path)
   end
 
   -- VENV
-  local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, silent = true })
+  local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, hidden = true, silent = true })
   for _, path in ipairs(paths) do
     table.insert(venvs, {
       -- TODO how does one get the name of the file directly?
