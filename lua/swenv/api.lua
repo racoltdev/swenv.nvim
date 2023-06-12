@@ -86,7 +86,8 @@ M.select_cached = function()
 				local env_path = Path:new(env)
 				local env_root = env_path:parent()
 				local env_name = env_path:make_relative(env_path:parent().filename)
-				local env_objs = M.get_venvs(env_root.filename)
+				local env_root_list = {env_root.filename}
+				local env_objs = M.get_venvs(env_root_list)
 				for _, e in ipairs(env_objs) do
 					if e.name == env_name then
 						print('Automatically sourcing '..env..' from venv cache')
@@ -157,7 +158,7 @@ M.get_current_venv = function()
   return current_venv
 end
 
-M.get_venvs = function(venvs_path)
+M.get_venvs = function(venvs_paths)
   local success, Path = pcall(require, 'plenary.path')
   if not success then
     vim.notify('Could not require plenary: ' .. Path, vim.log.levels.WARN)
@@ -183,21 +184,22 @@ M.get_venvs = function(venvs_path)
   end
 
   -- VENV
-  local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, hidden = true, silent = true })
-  for _, path in ipairs(paths) do
-    table.insert(venvs, {
-      -- TODO how does one get the name of the file directly?
-      name = Path:new(path):make_relative(venvs_path),
-      path = path,
-      source = 'venv',
-    })
+  for _, venvs_path in ipairs(venvs_paths) do
+  	local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, hidden = true, silent = true })
+  	for _, path in ipairs(paths) do
+  	  table.insert(venvs, {
+  	    -- TODO how does one get the name of the file directly?
+  	    name = Path:new(path):make_relative(venvs_path),
+  	    path = path,
+  	    source = 'venv',
+  	  })
+  	end
   end
-
   return venvs
 end
 
 M.pick_venv = function()
-  vim.ui.select(settings.get_venvs(settings.venvs_path), {
+  vim.ui.select(settings.get_venvs({settings.venvs_paths, get_root().filename}), {
     prompt = 'Select python venv',
     format_item = function(item)
       return string.format('%s (%s) [%s]', item.name, item.path, item.source)

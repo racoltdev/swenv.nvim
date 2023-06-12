@@ -7,8 +7,8 @@ M.settings = {
   get_venvs = function(venvs_path)
     return require('swenv.api').get_venvs(venvs_path)
   end,
-  -- Path passed to `get_venvs`.
-  venvs_path = vim.fn.expand('~/venvs'),
+  -- Path passed to `get_venvs`
+  venvs_paths = vim.fn.expand('~/venvs'),
   -- Something to do after setting an environment
   post_set_venv = nil,
 }
