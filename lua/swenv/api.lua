@@ -133,8 +133,9 @@ M.init = function()
 
   local venv_env = vim.fn.getenv('VIRTUAL_ENV')
   if venv_env ~= vim.NIL then
+	parent = Path:new(venv_env):parent()
     venv = {
-      name = Path:new(venv_env):make_relative(settings.venvs_path),
+      name = Path:new(venv_env):make_relative(parent.filename),
       path = venv_env,
       source = 'venv',
     }
@@ -199,7 +200,11 @@ M.get_venvs = function(venvs_paths)
 end
 
 M.pick_venv = function()
-  vim.ui.select(settings.get_venvs({settings.venvs_paths, get_root().filename}), {
+  paths = settings.venvs_paths
+  for _, path in ipairs(paths) do
+	  -- print(path)
+  end
+  vim.ui.select(settings.get_venvs(settings.venvs_paths), {
     prompt = 'Select python venv',
     format_item = function(item)
       return string.format('%s (%s) [%s]', item.name, item.path, item.source)

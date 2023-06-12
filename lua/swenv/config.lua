@@ -8,7 +8,7 @@ M.settings = {
     return require('swenv.api').get_venvs(venvs_path)
   end,
   -- Path passed to `get_venvs`
-  venvs_paths = vim.fn.expand('~/venvs'),
+  venvs_paths = {vim.fn.expand('~/venvs'), require('swenv.cache').get_root().filename},
   -- Something to do after setting an environment
   post_set_venv = nil,
 }
