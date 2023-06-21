@@ -201,9 +201,6 @@ end
 
 M.pick_venv = function()
   paths = settings.venvs_paths
-  for _, path in ipairs(paths) do
-	  -- print(path)
-  end
   vim.ui.select(settings.get_venvs(settings.venvs_paths), {
     prompt = 'Select python venv',
     format_item = function(item)

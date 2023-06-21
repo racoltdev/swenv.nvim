@@ -1,5 +1,14 @@
 local M = {}
 
+local get_venvs_paths = function()
+  venvs_paths = {vim.fn.expand('~/venvs')}
+  cache = require('swenv.cache').get_root()
+  if cache then
+	  venvs_paths[1] = cache.filename
+  end
+  return venvs_paths
+end
+
 M.settings = {
   -- Should return a list of tables with a `name` and a `path` entry each.
   -- Gets the argument `venvs_path` set below.
@@ -8,7 +17,7 @@ M.settings = {
     return require('swenv.api').get_venvs(venvs_path)
   end,
   -- Path passed to `get_venvs`
-  venvs_paths = {vim.fn.expand('~/venvs'), require('swenv.cache').get_root().filename},
+  venvs_paths = get_venvs_paths(),
   -- Something to do after setting an environment
   post_set_venv = nil,
 }
