@@ -97,11 +97,11 @@ M.select_cached = function()
 				end
 				print('Could not find valid venv in cache')
 			end
+		M.pick_venv()
 		end
 	else
-		print('Project root could not be found')
+		print('Project root could not be found. Please manually source or edit swenv config')
 	end
-	M.pick_venv()
 	return
 end
 
