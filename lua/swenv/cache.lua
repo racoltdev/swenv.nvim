@@ -1,10 +1,13 @@
 local M = {}
 
-M.get_root = function(scanHeight)
+local list_root_files = function(scan_height)
 	local Path = require('plenary.path')
 	local scandir = require'plenary.scandir'.scan_dir
 
-	local scan = scandir('.', { add_dirs = true, hidden = true, depth = 2 })
+	local scan = scandir(scan_height, { add_dirs = true, hidden = true, depth = 2 })
+--	for _, f in ipairs(scan) do
+--		print(f)
+--	end
 	local root_file = nil
 	local root_dir = nil
 	local root_markers = {".git", ".venv", "venv", "pyrightconfig.json"}
@@ -22,6 +25,19 @@ M.get_root = function(scanHeight)
 		root_dir = Path:new(root_file):parent()
 	end
 	return root_dir
+end
+
+M.get_root = function()
+	local root_dir = list_root_files('.')
+	if root_dir == nil then
+		root_dir = list_root_files('..')
+	end
+	if root_dir == nil then
+		root_dir = list_root_files('../..')
+	end
+	return root_dir
+
+
 end
 
 return M

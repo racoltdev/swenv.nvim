@@ -22,7 +22,7 @@ local find_cache = function(dir)
 end
 
 local write_cache = function(env_path)
-	local root = require("swenv.cache").get_root(0)
+	local root = require("swenv.cache").get_root()
 	local Path = require('plenary.path')
 	local cache = Path:new(root.filename .. '/.cachedVenv')
 	if not cache:is_file() then
@@ -53,7 +53,7 @@ end
 
 M.select_cached = function()
 	local Path = require('plenary.path')
-	local root_dir  = require('swenv.cache').get_root(0)
+	local root_dir  = require('swenv.cache').get_root()
 	if root_dir then
 		print('Project root directory found: ' .. root_dir.filename)
 		local cache = find_cache(root_dir)
