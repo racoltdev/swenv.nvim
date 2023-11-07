@@ -10,29 +10,6 @@ local update_path = function(path)
   vim.fn.setenv('PATH', path .. '/bin' .. ':' .. ORIGINAL_PATH)
 end
 
-local get_root = function()
-	local Path = require('plenary.path')
-	local scandir = require'plenary.scandir'.scan_dir
-
-	local scan = scandir('.', { add_dirs = true, hidden = true, depth = 2 })
-	local root_file = nil
-	local root_dir = nil
-	local root_markers = {".git", ".venv", "venv", "pyrightconfig.json"}
-	for _, f in ipairs(scan) do
-		local path = vim.split(f, '/')
-		local i = table.getn(path)
-		local file_name = path[i]
-		for _, marker in ipairs(root_markers) do
-			if file_name == marker then
-				root_file = f
-			end
-		end
-	end
-	if root_file ~= nil then
-		root_dir = Path:new(root_file):parent()
-	end
-	return root_dir
-end
 
 local find_cache = function(dir)
 	local Path = require('plenary.path')
@@ -45,7 +22,7 @@ local find_cache = function(dir)
 end
 
 local write_cache = function(env_path)
-	local root = get_root()
+	local root = require("swenv.cache").get_root(0)
 	local Path = require('plenary.path')
 	local cache = Path:new(root.filename .. '/.cachedVenv')
 	if not cache:is_file() then
@@ -76,7 +53,7 @@ end
 
 M.select_cached = function()
 	local Path = require('plenary.path')
-	local root_dir  = get_root()
+	local root_dir  = require('swenv.cache').get_root(0)
 	if root_dir then
 		print('Project root directory found: ' .. root_dir.filename)
 		local cache = find_cache(root_dir)

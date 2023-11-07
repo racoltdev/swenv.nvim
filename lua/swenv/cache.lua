@@ -1,6 +1,6 @@
 local M = {}
 
-M.get_root = function()
+M.get_root = function(scanHeight)
 	local Path = require('plenary.path')
 	local scandir = require'plenary.scandir'.scan_dir
 
