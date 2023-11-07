@@ -74,8 +74,8 @@ M.select_cached = function()
 				end
 				print('Could not find valid venv in cache')
 			end
-		M.pick_venv()
 		end
+		M.pick_venv()
 	else
 		print('Project root could not be found. Please manually source or edit swenv config')
 	end
@@ -165,12 +165,15 @@ M.get_venvs = function(venvs_paths)
   for _, venvs_path in ipairs(venvs_paths) do
   	local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, hidden = true, silent = true })
   	for _, path in ipairs(paths) do
-  	  table.insert(venvs, {
-  	    -- TODO how does one get the name of the file directly?
-  	    name = Path:new(path):make_relative(venvs_path),
-  	    path = path,
-  	    source = 'venv',
-  	  })
+		local potential_dir_name = Path:new(path):make_relative(venvs_path)
+		if Path:new(path .. "/pyvenv.cfg"):exists() then
+			table.insert(venvs, {
+  	    		-- TODO how does one get the name of the file directly?
+  	    		name = potential_dir_name,
+				path = path,
+  	    		source = 'venv',
+  			})
+		end
   	end
   end
   return venvs
