@@ -7,8 +7,10 @@ local update_config = function(opts)
 end
 
 M.setup = function(opts)
+ -- this doesn't save the settings by the time the selector loads
   update_config(opts)
-  require('swenv.api').init()
+  -- this swaps out the venv before a lang server can load
+  --require('swenv.api').init()
 end
 
 return M

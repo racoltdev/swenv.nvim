@@ -51,20 +51,23 @@ local set_venv = function(venv)
   write_cache(venv.path)
 end
 
-M.select_cached = function()
+select_cached = function()
 	local Path = require('plenary.path')
 	local root_dir  = require('swenv.cache').get_root()
+	-- Project root found
 	if root_dir then
 		print('Project root directory found: ' .. root_dir.filename)
 		local cache = find_cache(root_dir)
+		-- .cachedVenv exists
 		if cache then
 			local env = cache:readlines()[1]
+			-- check that there is an entry in .cacheVenvs
 			if env then
 				local env_path = Path:new(env)
 				local env_root = env_path:parent()
 				local env_name = env_path:make_relative(env_path:parent().filename)
 				local env_root_list = {env_root.filename}
-				local env_objs = M.get_venvs(env_root_list)
+				local env_objs = get_venvs(env_root_list)
 				for _, e in ipairs(env_objs) do
 					if e.name == env_name then
 						print('Automatically sourcing '..env..' from venv cache')
@@ -74,8 +77,10 @@ M.select_cached = function()
 				end
 				print('Could not find valid venv in cache')
 			end
+		-- cache does not exist
+		else
+			pick_venv()
 		end
-		M.pick_venv()
 	else
 		print('Project root could not be found. Please manually source or edit swenv config')
 	end
@@ -130,13 +135,14 @@ M.init = function()
   if venv then
     current_venv = venv
   end
+  select_cached()
 end
 
-M.get_current_venv = function()
+get_current_venv = function()
   return current_venv
 end
 
-M.get_venvs = function(venvs_paths)
+get_venvs = function(venvs_paths)
   local success, Path = pcall(require, 'plenary.path')
   if not success then
     vim.notify('Could not require plenary: ' .. Path, vim.log.levels.WARN)
@@ -179,9 +185,9 @@ M.get_venvs = function(venvs_paths)
   return venvs
 end
 
-M.pick_venv = function()
+pick_venv = function()
   paths = settings.venvs_paths
-  vim.ui.select(settings.get_venvs(settings.venvs_paths), {
+  vim.ui.select(get_venvs(settings.venvs_paths), {
     prompt = 'Select python venv',
     format_item = function(item)
       return string.format('%s (%s) [%s]', item.name, item.path, item.source)
