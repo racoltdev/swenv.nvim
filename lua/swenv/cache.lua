@@ -1,10 +1,10 @@
 local M = {}
 
-local list_root_files = function(scan_height)
+local list_root_files = function(scan_point, depth)
 	local Path = require('plenary.path')
 	local scandir = require'plenary.scandir'.scan_dir
 
-	local scan = scandir(scan_height, { add_dirs = true, hidden = true, depth = 2 })
+	local scan = scandir(scan_point, { add_dirs = true, hidden = true, depth = depth })
 --	for _, f in ipairs(scan) do
 --		print(f)
 --	end
@@ -28,12 +28,12 @@ local list_root_files = function(scan_height)
 end
 
 M.get_root = function()
-	local root_dir = list_root_files('.')
+	local root_dir = list_root_files('.', 1)
 	if root_dir == nil then
-		root_dir = list_root_files('..')
+		root_dir = list_root_files('..', 2)
 	end
 	if root_dir == nil then
-		root_dir = list_root_files('../..')
+		root_dir = list_root_files('../..', 2)
 	end
 	return root_dir
 
